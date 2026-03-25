@@ -1,0 +1,10 @@
+//usr/bin/env g++ "$0" -o /tmp/a; /tmp/a "$@"; exit $?
+
+#include <iostream>
+
+int main() {
+    using namespace std;
+    cout << "Hello, World!" << endl;
+    return 0;
+}
+

@@ -1,0 +1,9 @@
+//usr/bin/env gcc "$0" -o /tmp/a; /tmp/a "$@"; exit $?
+
+#include <stdio.h>
+
+int main() {
+  printf("Hello, World!\n");
+  return 0;
+}
+
