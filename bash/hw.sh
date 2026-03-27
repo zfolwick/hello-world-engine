@@ -33,67 +33,27 @@ hw_help() {
 
 set_filename() {
   local FILENAME="helloworld"
-  local EXTENSION="$1"
+  local EXTENSION
+  EXTENSION=$(sed -n '2p' "$PWD"/lib/"$1".hw | cut -d':' -f 2 | tr -d ' ')
   [[ "${FILENAME%*.$EXTENSION}" != "${FILENAME}" ]] && echo "$FILENAME" || echo "$FILENAME".$EXTENSION
 }
 
 helloworld() {
   local FILE
-  FILE=$(set_filename "$1")
-  cat "$PWD"/lib/"$2".hw > "$FILE"
+  local LANGUAGE_BINDING="$1"
+  FILE=$(set_filename "$LANGUAGE_BINDING")
+  cat "$PWD"/lib/"$LANGUAGE_BINDING".hw > "$FILE"
   chmod +x "$FILE"
+  exit 0
 }
 
+if [[ "$1" == *"-h" || "$1" == *"help" ]]; then
+  description
+  usage
+  hw_help
+  exit 0
+fi
 
-while [ "$#" -gt 0 ]; do
-  case "$1" in
-    bash)
-      shift
-      helloworld "sh" "bash"
-      exit $?
-      ;;
-    c)
-      shift
-      helloworld "c" "c"
-      exit $?
-      ;;
-    cpp|c++)
-      shift
-      helloworld "cpp" "cpp"
-      exit $?
-      ;;
-    go)
-      shift
-      helloworld "go" "go"
-      exit $?
-      ;;
-    node)
-      shift
-      helloworld "js" "node"
-      exit $?
-      ;;
-    python)
-      shift
-      helloworld "py" "python"
-      exit $?
-      ;;
-    ts)
-      shift
-      helloworld "ts" "typescript"
-      exit $?
-      ;;
-    -h|--help|help)
-      description
-      usage
-      hw_help
-      exit 0
-      ;;
-      *)
-      echo "unknown command: [$1]" 
-      description
-      usage
-      hw_help
-      exit 1
-      ;;
-  esac
-done
+LANGUAGE_BINDING="$1"
+helloworld "$LANGUAGE_BINDING"
+

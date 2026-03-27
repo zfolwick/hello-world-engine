@@ -1,4 +1,5 @@
 //usr/bin/env gcc "$0" -o /tmp/a; /tmp/a "$@"; exit $?
+//extension: c
 
 #include <stdio.h>
 

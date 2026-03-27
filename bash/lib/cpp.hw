@@ -1,4 +1,5 @@
 //usr/bin/env g++ "$0" -o /tmp/a; /tmp/a "$@"; exit $?
+//extension: cpp
 
 #include <iostream>
 
