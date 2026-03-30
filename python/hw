@@ -1,0 +1,81 @@
+#!/usr/bin/env python3
+
+import os
+import sys
+from pathlib import Path
+
+def description():
+    print("Creates a simple hello world program in a target language.")
+
+def usage(argv0: str):
+    print(f"""  Usage:
+  "{argv0}" LANGUAGE
+
+  Example:
+  "{argv0}" go
+
+  Outputs "helloworld.go"
+""")
+
+def hw_help(pwd: Path):
+    libdir = pwd / "lib"
+
+    # cat "$PWD"/lib/help.txt
+    help_txt = libdir / "help.txt"
+    if help_txt.exists():
+        sys.stdout.write(help_txt.read_text(encoding="utf-8", errors="replace"))
+
+    # integrations_list=$(ls $PWD/lib | awk '{sub(/.hw/,""); print}')
+    for p in sorted(libdir.glob("*.hw")):
+        print(p.stem)
+    print("")
+
+def set_filename(pwd: Path, lang: str) -> str:
+    filename = "helloworld"
+    hw_path = pwd / "lib" / f"{lang}.hw"
+
+    # EXTENSION=$(sed -n '2p' ... | cut -d':' -f 2 | tr -d ' ')
+    lines = hw_path.read_text(encoding="utf-8", errors="replace").splitlines()
+    if len(lines) < 2:
+        raise SystemExit(f"Error: {hw_path} missing line 2 for extension")
+
+    line2 = lines[1]
+    ext = line2.split(":", 1)[1] if ":" in line2 else line2
+    ext = "".join(ext.split())  # remove all whitespace like `tr -d ' '`
+
+    # match intent: append if not already ending with .ext
+    if filename.endswith(f".{ext}"):
+        return filename
+    return f"{filename}.{ext}"
+
+def helloworld(pwd: Path, lang: str):
+    out_file = set_filename(pwd, lang)
+    src = pwd / "lib" / f"{lang}.hw"
+
+    Path(out_file).write_bytes(src.read_bytes())
+    os.chmod(out_file, 0o755)
+    raise SystemExit(0)
+
+def main():
+    pwd = Path.cwd()
+
+    if len(sys.argv) == 1:
+        print("Need language")
+        usage(sys.argv[0])
+        hw_help(pwd)
+        raise SystemExit(1)
+
+    arg1 = sys.argv[1]
+
+    # if [[ "$1" == *"-h" || "$1" == *"help" ]]
+    if ("-h" in arg1) or ("help" in arg1):
+        description()
+        usage(sys.argv[0])
+        hw_help(pwd)
+        raise SystemExit(0)
+
+    helloworld(pwd, arg1)
+
+if __name__ == "__main__":
+    main()
+

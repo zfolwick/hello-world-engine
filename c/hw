@@ -1,0 +1,209 @@
+//////usr/bin/env gcc -x c -Wall -O3 -std=gnu17 "$0" -o /tmp/a -lm && /tmp/a "$@"; exit
+
+// hw.c - C translation of your Bash script
+// build: gcc -Wall -O3 -std=gnu17 hw.c -o hw
+// run:   ./hw LANGUAGE   OR   ./hw -h
+
+#define _POSIX_C_SOURCE 200809L
+
+#include <ctype.h>
+#include <dirent.h>
+#include <errno.h>
+#include <limits.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
+static void description(void) {
+  puts("Creates a simple hello world program in a target language.");
+}
+
+static void usage(const char *argv0) {
+  printf(
+      "Usage:\n"
+      "  \"%s\" LANGUAGE\n\n"
+      "Example:\n"
+      "  \"%s\" go\n\n"
+      "Outputs \"helloworld.go\"\n\n",
+      argv0, argv0);
+}
+
+static void cat_file(const char *path) {
+  FILE *fp = fopen(path, "rb");
+  if (!fp) return; // match bash-ish "best effort" for help.txt
+  char buf[8192];
+  size_t n;
+  while ((n = fread(buf, 1, sizeof buf, fp)) > 0) {
+    fwrite(buf, 1, n, stdout);
+  }
+  fclose(fp);
+}
+
+// trim in-place: removes leading/trailing whitespace
+static char *trim(char *s) {
+  while (*s && isspace((unsigned char)*s)) s++;
+  char *end = s + strlen(s);
+  while (end > s && isspace((unsigned char)end[-1])) end--;
+  *end = '\0';
+  return s;
+}
+
+// read line 2 from lib/<lang>.hw, parse extension from "key: value"
+static bool read_extension(const char *lib_hw_path, char *out_ext, size_t out_sz) {
+  FILE *fp = fopen(lib_hw_path, "r");
+  if (!fp) return false;
+
+  char line[4096];
+  // line 1
+  if (!fgets(line, sizeof line, fp)) { fclose(fp); return false; }
+  // line 2
+  if (!fgets(line, sizeof line, fp)) { fclose(fp); return false; }
+  fclose(fp);
+
+  // mimic: cut -d':' -f2 | tr -d ' '
+  char *colon = strchr(line, ':');
+  char *val = colon ? colon + 1 : line;
+  val = trim(val);
+
+  // delete all spaces in val (like tr -d ' ')
+  char tmp[256];
+  size_t j = 0;
+  for (size_t i = 0; val[i] && j + 1 < sizeof tmp; i++) {
+    if (!isspace((unsigned char)val[i])) tmp[j++] = val[i];
+  }
+  tmp[j] = '\0';
+
+  if (tmp[0] == '\0') return false;
+
+  snprintf(out_ext, out_sz, "%s", tmp);
+  return true;
+}
+
+static void set_filename(const char *ext, char *out_path, size_t out_sz) {
+  const char *base = "helloworld";
+  size_t blen = strlen(base);
+  size_t elen = strlen(ext);
+
+  // if base already ends with .ext, keep it; else append
+  // (your bash check is effectively always "append", but this matches intent)
+  if (blen > elen + 1 &&
+      base[blen - elen - 1] == '.' &&
+      strcmp(base + (blen - elen), ext) == 0) {
+    snprintf(out_path, out_sz, "%s", base);
+  } else {
+    snprintf(out_path, out_sz, "%s.%s", base, ext);
+  }
+}
+
+static bool copy_file(const char *src, const char *dst) {
+  FILE *in = fopen(src, "rb");
+  if (!in) return false;
+
+  FILE *out = fopen(dst, "wb");
+  if (!out) { fclose(in); return false; }
+
+  char buf[8192];
+  size_t n;
+  while ((n = fread(buf, 1, sizeof buf, in)) > 0) {
+    if (fwrite(buf, 1, n, out) != n) {
+      fclose(in);
+      fclose(out);
+      return false;
+    }
+  }
+
+  fclose(in);
+  fclose(out);
+  return true;
+}
+
+static void hw_help(const char *pwd) {
+  char help_txt[PATH_MAX];
+  snprintf(help_txt, sizeof help_txt, "%s/lib/help.txt", pwd);
+  cat_file(help_txt);
+
+  // list integrations = files in lib ending with .hw, print name without .hw
+  char libdir[PATH_MAX];
+  snprintf(libdir, sizeof libdir, "%s/lib", pwd);
+
+  DIR *d = opendir(libdir);
+  if (!d) {
+    puts("");
+    return;
+  }
+
+  struct dirent *ent;
+  while ((ent = readdir(d)) != NULL) {
+    const char *name = ent->d_name;
+    size_t len = strlen(name);
+    if (len > 3 && strcmp(name + (len - 3), ".hw") == 0) {
+      char base[NAME_MAX + 1];
+      size_t blen = len - 3;
+      if (blen >= sizeof base) blen = sizeof base - 1;
+      memcpy(base, name, blen);
+      base[blen] = '\0';
+      puts(base);
+    }
+  }
+  closedir(d);
+  puts("");
+}
+
+int main(int argc, char **argv) {
+  char pwd[PATH_MAX];
+  if (!getcwd(pwd, sizeof pwd)) {
+    fprintf(stderr, "getcwd failed: %s\n", strerror(errno));
+    return 1;
+  }
+
+  if (argc == 1) {
+    puts("Need language");
+    usage(argv[0]);
+    hw_help(pwd);
+    return 1;
+  }
+
+  const char *arg1 = argv[1];
+
+  // mimic: if [[ "$1" == *"-h" || "$1" == *"help" ]]
+  if (strstr(arg1, "-h") != NULL || strstr(arg1, "help") != NULL) {
+    description();
+    usage(argv[0]);
+    hw_help(pwd);
+    return 0;
+  }
+
+  // LANGUAGE_BINDING="$1"
+  const char *lang = arg1;
+
+  // read extension from lib/<lang>.hw line 2
+  char lib_hw_path[PATH_MAX];
+  snprintf(lib_hw_path, sizeof lib_hw_path, "%s/lib/%s.hw", pwd, lang);
+
+  char ext[128];
+  if (!read_extension(lib_hw_path, ext, sizeof ext)) {
+    fprintf(stderr, "Error: could not read extension from %s\n", lib_hw_path);
+    return 1;
+  }
+
+  // output filename
+  char outfile[PATH_MAX];
+  set_filename(ext, outfile, sizeof outfile);
+
+  // copy lib/<lang>.hw to outfile
+  if (!copy_file(lib_hw_path, outfile)) {
+    fprintf(stderr, "Error: could not write %s from %s\n", outfile, lib_hw_path);
+    return 1;
+  }
+
+  // chmod +x
+  if (chmod(outfile, 0755) != 0) {
+    fprintf(stderr, "Warning: chmod failed on %s: %s\n", outfile, strerror(errno));
+    // still succeed like many scripts do
+  }
+
+  return 0;
+}

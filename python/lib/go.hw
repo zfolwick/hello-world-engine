@@ -1,0 +1,12 @@
+/*usr/bin/env go run "$0" "$@"; exit $? #*/
+//extension: go
+
+package main
+
+import (
+  "fmt"
+)
+func main() {
+  fmt.Println("Hello, World!")
+}
+

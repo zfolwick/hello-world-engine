@@ -1,0 +1,5 @@
+#!/usr/bin/env node
+//extension: js
+
+console.log('Hello, World!');
+
