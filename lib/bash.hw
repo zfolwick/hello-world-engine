@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 #extension: sh
 
-echo "Hello, World"
+echo "Hello, World!"

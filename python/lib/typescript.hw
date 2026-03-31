@@ -1,5 +1,0 @@
-///usr/bin/env tsc "$0" --outFile /tmp/a; node /tmp/a "$@"; exit $?
-//extension: ts
-
-console.log('Hello, World!');
-

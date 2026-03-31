@@ -18,7 +18,7 @@ def usage(argv0: str):
 """)
 
 def hw_help(pwd: Path):
-    libdir = pwd / "lib"
+    libdir = pwd / "../lib"
 
     # cat "$PWD"/lib/help.txt
     help_txt = libdir / "help.txt"
@@ -32,7 +32,7 @@ def hw_help(pwd: Path):
 
 def set_filename(pwd: Path, lang: str) -> str:
     filename = "helloworld"
-    hw_path = pwd / "lib" / f"{lang}.hw"
+    hw_path = pwd / "../lib" / f"{lang}.hw"
 
     # EXTENSION=$(sed -n '2p' ... | cut -d':' -f 2 | tr -d ' ')
     lines = hw_path.read_text(encoding="utf-8", errors="replace").splitlines()
@@ -50,7 +50,7 @@ def set_filename(pwd: Path, lang: str) -> str:
 
 def helloworld(pwd: Path, lang: str):
     out_file = set_filename(pwd, lang)
-    src = pwd / "lib" / f"{lang}.hw"
+    src = pwd / "../lib" / f"{lang}.hw"
 
     Path(out_file).write_bytes(src.read_bytes())
     os.chmod(out_file, 0o755)

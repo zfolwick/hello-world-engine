@@ -1,4 +1,0 @@
-  -h,--help,help    This menu
-
-Hello World LANGUAGE integrations:
-

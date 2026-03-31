@@ -122,12 +122,12 @@ static bool copy_file(const char *src, const char *dst) {
 
 static void hw_help(const char *pwd) {
   char help_txt[PATH_MAX];
-  snprintf(help_txt, sizeof help_txt, "%s/lib/help.txt", pwd);
+  snprintf(help_txt, sizeof help_txt, "%s/../lib/help.txt", pwd);
   cat_file(help_txt);
 
   // list integrations = files in lib ending with .hw, print name without .hw
   char libdir[PATH_MAX];
-  snprintf(libdir, sizeof libdir, "%s/lib", pwd);
+  snprintf(libdir, sizeof libdir, "%s/../lib", pwd);
 
   DIR *d = opendir(libdir);
   if (!d) {
@@ -181,7 +181,7 @@ int main(int argc, char **argv) {
 
   // read extension from lib/<lang>.hw line 2
   char lib_hw_path[PATH_MAX];
-  snprintf(lib_hw_path, sizeof lib_hw_path, "%s/lib/%s.hw", pwd, lang);
+  snprintf(lib_hw_path, sizeof lib_hw_path, "%s/../lib/%s.hw", pwd, lang);
 
   char ext[128];
   if (!read_extension(lib_hw_path, ext, sizeof ext)) {

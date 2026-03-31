@@ -55,7 +55,7 @@ teardown() {
   pushd "$PROJ_ROOT"
   shopt -s nullglob
 
-  for f in ./lib/*.hw; do
+  for f in ./../lib/*.hw; do
     lang="${f##*/}"
     lang="${lang%.hw}"
 
@@ -83,7 +83,7 @@ teardown() {
 
 @test "the created helloworld script prints [Hello, World] to the console" {
   pushd "$PROJ_ROOT"
-  for f in ./lib/*.hw; do
+  for f in ./../lib/*.hw; do
     lang="${f##*/}"
     lang="${lang%.hw}"
  
@@ -94,7 +94,7 @@ teardown() {
     run ./hw "$lang"
 
     # Run the program
-    ext=$(sed -n '2p' "./lib/$lang.hw" | sed 's/.*://; s/[()[:space:]]//g')
+    ext=$(sed -n '2p' "./../lib/$lang.hw" | sed 's/.*://; s/[()[:space:]]//g')
     run ./helloworld.$ext
 
     # Assert the output

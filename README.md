@@ -5,7 +5,9 @@ This project represents an observation that every new project and script has _so
 All scripts almost without exception begin with a file that just logs to the console with the executable bit set. This just lets the developer know that they've set up the file correctly.
 
 # Motivation
-This process is a coding exercise to flex some basic skills in a coding language I rarely use, using a style I only just became aware of. I also wanted to reduce the overhead of context-switching into a different language. That being said, C is a horrendously difficult language when compared to bash and I was able to whip out a bash script in an evening that did everything I wanted and is extensible with a minor amount of effort.
+This process is a coding exercise to flex some basic skills in a coding language I rarely use, using a style I only just became aware of. I also wanted to reduce the overhead of context-switching into a different language. That being said, C is a horrendously difficult language when compared to bash and I was able to whip out a bash script in an evening that did everything I wanted and is extensible with a minor amount of effort. What followed was an exercise in using Copilot to port the bash implementation to C.
+
+Because I refuse to take LLM output with a "trust me bro", vibes-first attitude, I wrote a few basic tests using [bats](https://github.com/bats-core/bats-core), and made it capable of accepting a language binding as a parameter. Using these tests, I was able to clarify the interface, and verify LLM-translated implementations in different language bindings were completed to the satisfation of the basic user tests that it would be required to pass (namely, does it create a file that, when executed, the output to stdout is "Hello, World!"
 
 
 # How to use
