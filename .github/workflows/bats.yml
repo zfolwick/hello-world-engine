@@ -1,0 +1,59 @@
+name: bats
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  bash:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run bats tests
+        shell: bash
+        env:
+          BATS_BIN: ./test/bats/bin/bats
+          TEST_DIR: ./test
+        run: |
+          echo "Repo root: $(pwd)"
+          echo "BATS_BIN=$BATS_BIN"
+          echo "TEST_DIR=$TEST_DIR"
+
+          # Ensure bats is executable (common when vendored)
+          chmod +x "$BATS_BIN" || true
+
+          # Optional: show version for logs
+          "$BATS_BIN" --version || true
+
+          # Run tests (exit code reports status to GitHub automatically)
+          BINDING=bash "$BATS_BIN" "$TEST_DIR"
+
+  python:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run bats tests
+        shell: bash
+        env:
+          BATS_BIN: ./test/bats/bin/bats
+          TEST_DIR: ./test
+        run: |
+          echo "Repo root: $(pwd)"
+          echo "BATS_BIN=$BATS_BIN"
+          echo "TEST_DIR=$TEST_DIR"
+
+          # Ensure bats is executable (common when vendored)
+          chmod +x "$BATS_BIN" || true
+
+          # Optional: show version for logs
+          "$BATS_BIN" --version || true
+
+          # Run tests (exit code reports status to GitHub automatically)
+          BINDING=python "$BATS_BIN" "$TEST_DIR"
