@@ -7,18 +7,24 @@ description() {
 usage() {
   cat << USE
   Usage:
-  "$0" LANGUAGE
+  "$0" LANGUAGE [--parameterize|-p]
 
   Example:
   "$0 go
 
   Outputs "helloworld.go"
 
-
 USE
 }
 
 hw_help() {
+  
+  cat << FLAGS
+
+  Flags:
+  --parameterize, -p    Create a parameterized hello world program that accepts a name as an argument and prints "Hello, <name>!" instead of just "Hello, World!"
+FLAGS
+
   local integrations_list
   integrations_list=$(ls $PWD/../lib | awk '{sub(/.hw/,""); print}')
   cat "$PWD"/../lib/help.txt
@@ -47,6 +53,15 @@ helloworld() {
   exit 0
 }
 
+helloworld_params() {
+  local FILE
+  local LANGUAGE_BINDING="$1"
+  FILE=$(set_filename "$LANGUAGE_BINDING")
+  cat "$PWD"/../lib/params/"$LANGUAGE_BINDING".hw > "$FILE"
+  chmod +x "$FILE"
+  exit 0
+}
+
 if [[ "$1" == *"-h" || "$1" == *"help" ]]; then
   description
   usage
@@ -55,5 +70,24 @@ if [[ "$1" == *"-h" || "$1" == *"help" ]]; then
 fi
 
 LANGUAGE_BINDING="$1"
-helloworld "$LANGUAGE_BINDING"
+shift # skip the first param because it's the language binding
+while [[ "$#" != 0 ]]; do
+  case "$1" in
+    --parameterize|-p)
+      shift
+      PARAMETERS=true
+      ;;
+    * )
+      usage
+      hw_help
+      shift
+      ;;
+  esac
+done
+
+if [[ $PARAMETERS == "true" ]]; then
+  helloworld_params "$LANGUAGE_BINDING" 
+else
+  helloworld "$LANGUAGE_BINDING"
+fi
 

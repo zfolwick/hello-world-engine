@@ -1,0 +1,9 @@
+///usr/bin/env tsc "$0" --outDir /tmp --target ES2020 --module commonjs --lib ES2020,DOM; node "/tmp/$(basename "$0" .ts).js" "$@"; exit $?
+//extension: ts
+
+declare const process: any;
+
+const args = process.argv.slice(2);
+const who = args[0] ?? "World!";
+
+console.log(`Hello, ${who}!`);

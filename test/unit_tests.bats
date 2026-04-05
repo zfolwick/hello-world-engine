@@ -3,7 +3,7 @@ log() {
 }
 
 [ -n "${BINDING:-}" ] || {
-  log "Error: BINDING is unset or empty"
+  log "Error: BINDING is unset or empty. Try BINDING=bash to test bash language bindings"
   false
 }
 
@@ -103,4 +103,30 @@ teardown() {
     # clean up test
     rm -f "${PROJ_ROOT}/helloworld.$ext" "./helloworld.$ext"
   done
+}
+
+@test "parameterizing the output works" {
+  pushd "$PROJ_ROOT"
+  local param="test user"
+  for f in ./../lib/params/*.hw; do
+    lang="${f##*/}"
+    lang="${lang%.hw}"
+ 
+    local hw_text
+    hw_text="Hello, $param!"
+
+    # Create the file 
+    run ./hw "$lang" -p
+
+    # Run the program
+    ext=$(sed -n '2p' "./../lib/$lang.hw" | sed 's/.*://; s/[()[:space:]]//g')
+    run ./helloworld.$ext "test user"
+
+    # Assert the output
+    assert_output "$hw_text"
+
+    # clean up test
+    rm -f "${PROJ_ROOT}/helloworld.$ext" "./helloworld.$ext"
+  done
+
 }
