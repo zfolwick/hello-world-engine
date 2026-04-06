@@ -1,4 +1,5 @@
 # Hello, World!
+[![bats](https://github.com/zfolwick/hello-world-engine/actions/workflows/bats.yml/badge.svg)](https://github.com/zfolwick/hello-world-engine/actions/workflows/bats.yml)
 
 This project represents an observation that every new project and script has _some_ level of esoteric vocabulary or magical incantation associated with it.
 
